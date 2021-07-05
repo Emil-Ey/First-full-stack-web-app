@@ -37,23 +37,130 @@ __decorate([
 UsernamePasswordInput = __decorate([
     type_graphql_1.InputType()
 ], UsernamePasswordInput);
+let FieldError = class FieldError {
+};
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], FieldError.prototype, "field", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], FieldError.prototype, "message", void 0);
+FieldError = __decorate([
+    type_graphql_1.ObjectType()
+], FieldError);
+let UserResponse = class UserResponse {
+};
+__decorate([
+    type_graphql_1.Field(() => [FieldError], { nullable: true }),
+    __metadata("design:type", Array)
+], UserResponse.prototype, "errors", void 0);
+__decorate([
+    type_graphql_1.Field(() => User_1.User, { nullable: true }),
+    __metadata("design:type", User_1.User)
+], UserResponse.prototype, "user", void 0);
+UserResponse = __decorate([
+    type_graphql_1.ObjectType()
+], UserResponse);
 let UserResolver = class UserResolver {
-    register(options, { em }) {
+    me({ req, em }) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = em.create(User_1.User, { username: options.username, password:  });
-            yield em.persistAndFlush(user);
-            return 'bye';
+            if (!req.session.userId) {
+                return null;
+            }
+            const user = yield em.findOne(User_1.User, { id: req.session.userId });
+            return user;
+        });
+    }
+    register(options, { em, req }) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (options.username.length <= 2) {
+                return {
+                    errors: [{
+                            field: 'username',
+                            message: "username must be at least 2 characters",
+                        },],
+                };
+            }
+            if (options.password.length <= 3) {
+                return {
+                    errors: [{
+                            field: 'password',
+                            message: "password must be at least 4 characters",
+                        },],
+                };
+            }
+            const user = em.create(User_1.User, {
+                username: options.username,
+                password: options.password
+            });
+            try {
+                yield em.persistAndFlush(user);
+            }
+            catch (err) {
+                if (err.code === '23505' || err.detail.encludes("already exists")) {
+                    return {
+                        errors: [{
+                                field: 'username',
+                                message: "username already taken",
+                            },],
+                    };
+                }
+            }
+            req.session.userId = user.id;
+            return user;
+        });
+    }
+    login(options, { em, req }) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield em.findOne(User_1.User, { username: options.username });
+            if (!user) {
+                return {
+                    errors: [{
+                            field: 'username',
+                            message: "username does not exist",
+                        },],
+                };
+            }
+            if (user.password != options.password) {
+                return {
+                    errors: [{
+                            field: 'password',
+                            message: "incorrect password",
+                        },],
+                };
+            }
+            req.session.userId = user.id;
+            return {
+                user,
+            };
         });
     }
 };
 __decorate([
-    type_graphql_1.Mutation(() => User_1.User),
+    type_graphql_1.Query(() => User_1.User, { nullable: true }),
+    __param(0, type_graphql_1.Ctx()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], UserResolver.prototype, "me", null);
+__decorate([
+    type_graphql_1.Mutation(() => UserResponse),
     __param(0, type_graphql_1.Arg("options")),
     __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [UsernamePasswordInput, Object]),
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "register", null);
+__decorate([
+    type_graphql_1.Mutation(() => UserResponse),
+    __param(0, type_graphql_1.Arg("options")),
+    __param(1, type_graphql_1.Ctx()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [UsernamePasswordInput, Object]),
+    __metadata("design:returntype", Promise)
+], UserResolver.prototype, "login", null);
 UserResolver = __decorate([
     type_graphql_1.Resolver()
 ], UserResolver);
