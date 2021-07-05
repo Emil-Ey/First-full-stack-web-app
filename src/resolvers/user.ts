@@ -2,7 +2,6 @@ import { User } from "../entities/User";
 import { MyContext } from "src/types";
 import { Resolver, Arg, InputType, Field, Ctx, Mutation } from "type-graphql";
 
-
 @InputType()
 class UsernamePasswordInput {
     @Field()
@@ -11,12 +10,15 @@ class UsernamePasswordInput {
     password: string
 }
 
-@Resolver()
+@Resolver() 
 export class UserResolver {
-    @Mutation(() => String)
-    register(
-        @Arg()
+    @Mutation(() => User)
+    async register(
+        @Arg("options") options: UsernamePasswordInput,
+        @Ctx() { em }: MyContext
     ) {
-        return "hello world"
-    }
+        
+        const user = em.create(User, {username: options.username, password: })
+        await em.persistAndFlush(user);
+        return 'bye';
 }
