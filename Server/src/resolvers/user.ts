@@ -1,6 +1,7 @@
 import { User } from "../entities/User";
 import { MyContext } from "src/types";
 import { Resolver, Arg, InputType, Field, Ctx, Mutation, ObjectType, Query } from "type-graphql";
+import { getConnection } from "typeorm";
 
 @InputType()
 class UsernamePasswordInput {
@@ -43,7 +44,7 @@ export class UserResolver {
     @Mutation(() => UserResponse)
     async register(
         @Arg("options") options: UsernamePasswordInput,
-        @Ctx() { em, req }: MyContext
+        @Ctx() { req }: MyContext
     ) {
         if(options.username.length <= 2 ) {
             return {
@@ -63,14 +64,22 @@ export class UserResolver {
             };
         }
 
-        const user = em.create(User, {
-            username: options.username, 
-            password: options.password 
-        });
-        try{
-            await em.persistAndFlush(user);
+        let user;
+
+        try {
+            const result = await getConnection()
+            .createQueryBuilder()
+            .insert()
+            .into(User)
+            .values({
+                username: options.username,
+                password: options.password,
+            })
+            .returning("*")
+            .execute();
+            user = result.raw[0];
         } catch(err) {
-            if(err.code === '23505' || err.detail.encludes("already exists")) {
+            if(err.code === '23505') {
                 //duplicate username error
                 return {
                     errors: [{
@@ -81,8 +90,8 @@ export class UserResolver {
             }
         }
         req.session.userId = user.id;
-        
-        return user;
+
+        return { user };
     }
 
     @Mutation(() => UserResponse)
@@ -111,8 +120,6 @@ export class UserResolver {
 
         req.session.userId = user.id;
 
-        return {
-            user,
-        };
+        return { user };
     }
 }

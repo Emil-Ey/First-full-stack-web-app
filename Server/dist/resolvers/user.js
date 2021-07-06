@@ -24,6 +24,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserResolver = void 0;
 const User_1 = require("../entities/User");
 const type_graphql_1 = require("type-graphql");
+const typeorm_1 = require("typeorm");
 let UsernamePasswordInput = class UsernamePasswordInput {
 };
 __decorate([
@@ -73,7 +74,7 @@ let UserResolver = class UserResolver {
             return user;
         });
     }
-    register(options, { em, req }) {
+    register(options, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
             if (options.username.length <= 2) {
                 return {
@@ -91,15 +92,22 @@ let UserResolver = class UserResolver {
                         },],
                 };
             }
-            const user = em.create(User_1.User, {
-                username: options.username,
-                password: options.password
-            });
+            let user;
             try {
-                yield em.persistAndFlush(user);
+                const result = yield typeorm_1.getConnection()
+                    .createQueryBuilder()
+                    .insert()
+                    .into(User_1.User)
+                    .values({
+                    username: options.username,
+                    password: options.password,
+                })
+                    .returning("*")
+                    .execute();
+                user = result.raw[0];
             }
             catch (err) {
-                if (err.code === '23505' || err.detail.encludes("already exists")) {
+                if (err.code === '23505') {
                     return {
                         errors: [{
                                 field: 'username',
@@ -109,7 +117,7 @@ let UserResolver = class UserResolver {
                 }
             }
             req.session.userId = user.id;
-            return user;
+            return { user };
         });
     }
     login(options, { em, req }) {
@@ -132,9 +140,7 @@ let UserResolver = class UserResolver {
                 };
             }
             req.session.userId = user.id;
-            return {
-                user,
-            };
+            return { user };
         });
     }
 };
