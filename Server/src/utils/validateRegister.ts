@@ -1,8 +1,8 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateRegister = void 0;
-const validateRegister = (options) => {
-    if (!options.email.includes('@')) {
+import UsernamePasswordInput from "./usernamePasswordInput";
+
+export const validateRegister = (options: UsernamePasswordInput) => {
+    // Check if email includes @
+    if(!options.email.includes('@')) {
         return [
             {
                 field: 'email',
@@ -10,7 +10,8 @@ const validateRegister = (options) => {
             },
         ];
     }
-    if (options.username.includes('@')) {
+    // Check if username includes @
+    if(options.username.includes('@')) {
         return [
             {
                 field: 'username',
@@ -18,15 +19,17 @@ const validateRegister = (options) => {
             },
         ];
     }
-    if (options.username.length <= 2) {
+    // Check if username is at least of length 2
+    if(options.username.length <= 2 ) {
         return [
             {
                 field: 'username',
                 message: "username must be at least 2 characters",
             },
-        ];
+        ]
     }
-    if (options.password.length <= 3) {
+    // Check if password is at least of length 3
+    if(options.password.length <= 3 ) {
         return [
             {
                 field: 'password',
@@ -34,7 +37,6 @@ const validateRegister = (options) => {
             },
         ];
     }
+
     return null;
-};
-exports.validateRegister = validateRegister;
-//# sourceMappingURL=validateRegister.js.map
+}
