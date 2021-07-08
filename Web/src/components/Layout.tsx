@@ -10,7 +10,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, variant }) => {
 	return (
 		<>
 			<NavBar />
-			{children}
+			<Wrapper variant="regular">{children}</Wrapper>
 		</>
 	);
 };

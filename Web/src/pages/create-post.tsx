@@ -1,4 +1,4 @@
-import { Heading, Box } from "@chakra-ui/layout";
+import { Box, Heading } from "@chakra-ui/layout";
 import {
 	Alert,
 	AlertDescription,
@@ -7,23 +7,24 @@ import {
 	Button,
 	CloseButton,
 	Link,
-	Textarea,
 } from "@chakra-ui/react";
-import { Formik, Form } from "formik";
+import { Form, Formik } from "formik";
 import { withUrqlClient } from "next-urql";
+import NextLink from "next/link";
+import { useRouter } from "next/router";
 import React, { useState } from "react";
 import InputField from "../components/InputField";
+import { Layout } from "../components/Layout";
 import Wrapper from "../components/wrapper";
 import { useCreatePostMutation } from "../generated/graphql";
 import { createUrqlClient } from "../utils/createUrqlClient";
-import { useRouter } from "next/router";
-import NextLink from "next/link";
-import { Layout } from "../components/Layout";
+import { useIsAuth } from "../utils/useIsAuth";
 
 const CreatePost: React.FC<{}> = ({}) => {
 	const router = useRouter();
 	const [, createPost] = useCreatePostMutation();
 	const [error, setError] = useState(false);
+	useIsAuth();
 
 	return (
 		<Layout variant="small">

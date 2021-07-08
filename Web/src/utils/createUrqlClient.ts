@@ -8,9 +8,9 @@ import {
 } from "../generated/graphql";
 import { cacheExchange } from "@urql/exchange-graphcache";
 import { betterUpdateQuery } from "./betterUpdateQuery";
-import { pipe, tap } from "wonka";
+/*import { pipe, tap } from "wonka";*/
 
-const errorExchange: Exchange = ({ forward }) => {
+/*const errorExchange: Exchange = ({ forward }) => {
 	return pipe(
 		forward(ops$),
 		tap(({ error }) => {
@@ -19,7 +19,7 @@ const errorExchange: Exchange = ({ forward }) => {
 			}
 		})
 	);
-};
+};*/
 
 export const createUrqlClient = (ssrExchange: any) => ({
 	url: "http://localhost:4000/graphql",

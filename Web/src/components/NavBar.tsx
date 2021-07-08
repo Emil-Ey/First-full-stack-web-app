@@ -14,7 +14,7 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
 	let body = null;
 
 	// Data is loading
-	if (fetching) {
+	if (isServer() || fetching) {
 		body = null;
 		// User not logged in
 	} else if (!data?.me) {
