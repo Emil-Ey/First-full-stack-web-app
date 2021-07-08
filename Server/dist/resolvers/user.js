@@ -32,6 +32,7 @@ const usernamePasswordInput_1 = __importDefault(require("../utils/usernamePasswo
 const validateRegister_1 = require("../utils/validateRegister");
 const sendEmail_1 = require("../utils/sendEmail");
 const uuid_1 = require("uuid");
+const typeorm_1 = require("typeorm");
 let FieldError = class FieldError {
 };
 __decorate([
@@ -59,13 +60,13 @@ UserResponse = __decorate([
     type_graphql_1.ObjectType()
 ], UserResponse);
 let UserResolver = class UserResolver {
-    changePassword(token, newPassword, newPassword1, { redis, em, req }) {
+    changePassword(token, newPassword, newPassword1, { redis, req }) {
         return __awaiter(this, void 0, void 0, function* () {
             if (newPassword != newPassword1) {
                 return {
                     errors: [
                         {
-                            field: 'newPassword1',
+                            field: "newPassword1",
                             message: "passwords are not identical",
                         },
                     ],
@@ -75,7 +76,7 @@ let UserResolver = class UserResolver {
                 return {
                     errors: [
                         {
-                            field: 'newPassword',
+                            field: "newPassword",
                             message: "password must be at least 4 characters",
                         },
                     ],
@@ -87,81 +88,91 @@ let UserResolver = class UserResolver {
                 return {
                     errors: [
                         {
-                            field: 'token',
+                            field: "token",
                             message: "token expired",
                         },
                     ],
                 };
             }
-            const user = yield em.findOne(User_1.User, { id: parseInt(userId) });
+            const userIdNum = parseInt(userId);
+            const user = yield User_1.User.findOne(userIdNum);
             if (!user) {
                 return {
                     errors: [
                         {
-                            field: 'token',
+                            field: "token",
                             message: "user no longer exists",
                         },
                     ],
                 };
             }
-            user.password = newPassword;
-            yield em.persistAndFlush(user);
+            yield User_1.User.update({ id: userIdNum }, { password: newPassword });
             yield redis.del(key);
             req.session.userId = user.id;
             req.session.save();
             return { user };
         });
     }
-    forgotPassword(email, { em, redis }) {
+    forgotPassword(email, { redis }) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield em.findOne(User_1.User, { email: email });
+            const user = yield User_1.User.findOne({ where: { email } });
             if (!user) {
                 return true;
             }
             const token = uuid_1.v4();
-            redis.set(constants_1.FORGET_PASSWORD_PREFIX + token, user.id, 'ex', 1000 * 60 * 60 * 24 * 2);
+            redis.set(constants_1.FORGET_PASSWORD_PREFIX + token, user.id, "ex", 1000 * 60 * 60 * 24 * 2);
             sendEmail_1.sendEmail(email, `<a href="http://localhost:3000/change-password/${token}">rest password</a>`);
             return true;
         });
     }
-    me({ em, req }) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!req.session.userId) {
-                return null;
-            }
-            const user = yield em.findOne(User_1.User, { id: req.session.userId });
-            return user;
-        });
+    me({ req }) {
+        if (!req.session.userId) {
+            return null;
+        }
+        return User_1.User.findOne(req.session.userId);
     }
-    register(options, { em, req }) {
+    register(options, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
             const errors = validateRegister_1.validateRegister(options);
             if (errors) {
                 return { errors };
             }
-            const user = em.create(User_1.User, {
-                username: options.username,
-                email: options.email,
-                password: options.password,
-            });
+            let user;
             try {
-                yield em.persistAndFlush(user);
+                const result = yield typeorm_1.getConnection()
+                    .createQueryBuilder()
+                    .insert()
+                    .into(User_1.User)
+                    .values([
+                    {
+                        username: options.username,
+                        email: options.email,
+                        password: options.password,
+                    },
+                ])
+                    .returning("*")
+                    .execute();
+                user = result.raw[0];
             }
             catch (err) {
-                if (err.code === '23505' && err.detail.includes(options.email)) {
+                if (err.code === "23505" && err.detail.includes(options.email)) {
                     return {
-                        errors: [{
-                                field: 'email',
+                        errors: [
+                            {
+                                field: "email",
                                 message: "email already taken",
-                            },],
+                            },
+                        ],
                     };
                 }
-                if (err.code === '23505' && err.detail.includes(options.username)) {
+                if (err.code === "23505" && err.detail.includes(options.username)) {
                     return {
-                        errors: [{
-                                field: 'username',
+                        errors: [
+                            {
+                                field: "username",
                                 message: "username already taken",
-                            },],
+                            },
+                        ],
                     };
                 }
             }
@@ -170,25 +181,29 @@ let UserResolver = class UserResolver {
             return { user };
         });
     }
-    login(usernameOrEmail, password, { em, req }) {
+    login(usernameOrEmail, password, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield em.findOne(User_1.User, usernameOrEmail.includes('@')
-                ? { email: usernameOrEmail }
-                : { username: usernameOrEmail });
+            const user = yield User_1.User.findOne(usernameOrEmail.includes("@")
+                ? { where: { email: usernameOrEmail } }
+                : { where: { username: usernameOrEmail } });
             if (!user) {
                 return {
-                    errors: [{
-                            field: 'usernameOrEmail',
+                    errors: [
+                        {
+                            field: "usernameOrEmail",
                             message: "username does not exist",
-                        },],
+                        },
+                    ],
                 };
             }
             if (user.password != password) {
                 return {
-                    errors: [{
-                            field: 'password',
+                    errors: [
+                        {
+                            field: "password",
                             message: "incorrect password",
-                        },],
+                        },
+                    ],
                 };
             }
             req.session.userId = user.id;
@@ -197,7 +212,7 @@ let UserResolver = class UserResolver {
         });
     }
     logout({ req, res }) {
-        return new Promise(resolve => req.session.destroy(err => {
+        return new Promise((resolve) => req.session.destroy((err) => {
             if (err) {
                 console.log(err);
                 resolve(false);
@@ -210,9 +225,9 @@ let UserResolver = class UserResolver {
 };
 __decorate([
     type_graphql_1.Mutation(() => UserResponse),
-    __param(0, type_graphql_1.Arg('token')),
-    __param(1, type_graphql_1.Arg('newPassword')),
-    __param(2, type_graphql_1.Arg('newPassword1')),
+    __param(0, type_graphql_1.Arg("token")),
+    __param(1, type_graphql_1.Arg("newPassword")),
+    __param(2, type_graphql_1.Arg("newPassword1")),
     __param(3, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String, String, Object]),
@@ -220,7 +235,7 @@ __decorate([
 ], UserResolver.prototype, "changePassword", null);
 __decorate([
     type_graphql_1.Mutation(() => Boolean),
-    __param(0, type_graphql_1.Arg('email')),
+    __param(0, type_graphql_1.Arg("email")),
     __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, Object]),
@@ -231,7 +246,7 @@ __decorate([
     __param(0, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
+    __metadata("design:returntype", void 0)
 ], UserResolver.prototype, "me", null);
 __decorate([
     type_graphql_1.Mutation(() => UserResponse),

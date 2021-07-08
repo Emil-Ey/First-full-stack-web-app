@@ -29,10 +29,10 @@ const Post_1 = require("./entities/Post");
 const User_1 = require("./entities/User");
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const conn = yield typeorm_1.createConnection({
-        type: 'postgres',
-        database: 'MyFirstApp',
-        username: 'postgres',
-        password: 'postgres',
+        type: "postgres",
+        database: "MyFirstApp",
+        username: "postgres",
+        password: "postgres",
         logging: true,
         synchronize: true,
         entities: [Post_1.Post, User_1.User],
@@ -51,7 +51,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
             disableTouch: true,
         }),
         cookie: {
-            path: '/',
+            path: "/",
             maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
             httpOnly: true,
             sameSite: "lax",
@@ -74,8 +74,10 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         cors: false,
     });
     app.listen(4000, () => {
-        console.log('server started on localhost:4000');
+        console.log("server started on localhost:4000");
     });
 });
-main().catch(err => { console.error(err); });
+main().catch((err) => {
+    console.error(err);
+});
 //# sourceMappingURL=index.js.map

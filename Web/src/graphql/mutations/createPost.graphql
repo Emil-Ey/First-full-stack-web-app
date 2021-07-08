@@ -1,0 +1,8 @@
+mutation CreatePost($title, $text) {
+	createPost(options: {title: $title, text: $text}) {
+		id
+		createdAt
+		updatedAt
+		title
+	}
+}
