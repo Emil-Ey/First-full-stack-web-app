@@ -1,6 +1,5 @@
-import { Resolver, Query, Ctx, Arg, Mutation } from "type-graphql";
+import { Resolver, Query, Arg, Mutation } from "type-graphql";
 import { Post } from "../entities/Post";
-import { MyContext } from "../types";
 
 // CRUD
 @Resolver()
@@ -17,8 +16,8 @@ export class PostResolver {
 
 	// TODO
 	@Mutation(() => Post)
-	async createPost(@Arg("title") title: String): Promise<Post> {
-		return Post.create({ title });
+	async createPost(@Arg("title") title: string): Promise<Post> {
+		return Post.create({ title }).save();
 	}
 
 	@Mutation(() => Post, { nullable: true })

@@ -33,7 +33,7 @@ let PostResolver = class PostResolver {
     }
     createPost(title) {
         return __awaiter(this, void 0, void 0, function* () {
-            return Post_1.Post.create({ title });
+            return Post_1.Post.create({ title }).save();
         });
     }
     updatePost(id, title) {
