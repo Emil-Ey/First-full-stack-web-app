@@ -50,6 +50,9 @@ export const Login: React.FC<loginProps> = ({}) => {
 							<NextLink href="/forgot-password">
 								<Link ml={"auto"}>Forgot Password?</Link>
 							</NextLink>
+							<NextLink href="/register">
+								<Link ml={1}>Or create a user</Link>
+							</NextLink>
 						</Flex>
 						<Button
 							mt={4}
