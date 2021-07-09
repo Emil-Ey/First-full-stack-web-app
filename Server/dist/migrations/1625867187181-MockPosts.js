@@ -9,15 +9,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Migration20210705122532 = void 0;
-const migrations_1 = require("@mikro-orm/migrations");
-class Migration20210705122532 extends migrations_1.Migration {
-    up() {
+exports.MockPosts1625867187181 = void 0;
+class MockPosts1625867187181 {
+    up(queryRunner) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.addSql('create table "user" ("id" serial primary key, "created_at" timestamptz(0) not null, "updated_at" timestamptz(0) not null, "username" text not null, "password" text not null);');
-            this.addSql('alter table "user" add constraint "user_username_unique" unique ("username");');
+        });
+    }
+    down(queryRunner) {
+        return __awaiter(this, void 0, void 0, function* () {
         });
     }
 }
-exports.Migration20210705122532 = Migration20210705122532;
-//# sourceMappingURL=Migration20210705122532.js.map
+exports.MockPosts1625867187181 = MockPosts1625867187181;
+//# sourceMappingURL=1625867187181-MockPosts.js.map

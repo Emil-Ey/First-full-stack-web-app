@@ -28,71 +28,46 @@ const CreatePost: React.FC<{}> = ({}) => {
 
 	return (
 		<Layout variant="small">
-			{error ? (
-				<Alert zIndex={2} status="error">
-					<AlertIcon />
-					<AlertTitle mr={2}>Error!</AlertTitle>
-					<AlertDescription>
-						Not Logged in. Please login to create a post.
-						{"  "}
-						<NextLink href="/login">
-							<Link ml={2} fontWeight="bold">
-								Login
-							</Link>
-						</NextLink>
-					</AlertDescription>
-					<CloseButton
-						onClick={() => {
-							setError(false);
-						}}
-						position="absolute"
-						right="8px"
-						top="8px"
-					/>
-				</Alert>
-			) : null}
-			<Wrapper variant="small">
-				<Formik
-					initialValues={{ title: "", text: "" }}
-					onSubmit={async (values) => {
-						const { error } = await createPost({ options: values });
-						if (error?.message.includes("logged in")) {
-							// Not logged in
-							setError(true);
-						} else {
-							// Login successfully
-							router.push("/");
-						}
-					}}
-				>
-					{({ isSubmitting }) => (
-						<Form>
-							<Heading mb={5}>Create a post</Heading>
+			<Formik
+				initialValues={{ title: "", text: "" }}
+				onSubmit={async (values) => {
+					const { error } = await createPost({ options: values });
+					if (error?.message.includes("logged in")) {
+						// Not logged in
+						setError(true);
+					} else {
+						// Login successfully
+						router.push("/");
+					}
+				}}
+			>
+				{({ isSubmitting }) => (
+					<Form>
+						<Heading mb={5}>Create a post</Heading>
+						<InputField
+							name="title"
+							placeholder="title"
+							label="Title"
+						/>
+						<Box mt={4}>
 							<InputField
-								name="title"
-								placeholder="title"
-								label="Title"
+								name="text"
+								placeholder="text..."
+								label="Text"
+								textarea={true}
 							/>
-							<Box mt={4}>
-								<InputField
-									name="text"
-									placeholder="text..."
-									label="Text"
-									textarea={true}
-								/>
-							</Box>
-							<Button
-								mt={4}
-								type="submit"
-								isLoading={isSubmitting}
-								colorScheme="teal"
-							>
-								Create Post
-							</Button>
-						</Form>
-					)}
-				</Formik>
-			</Wrapper>
+						</Box>
+						<Button
+							mt={4}
+							type="submit"
+							isLoading={isSubmitting}
+							colorScheme="teal"
+						>
+							Create Post
+						</Button>
+					</Form>
+				)}
+			</Formik>
 		</Layout>
 	);
 };

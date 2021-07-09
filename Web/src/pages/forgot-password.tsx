@@ -4,15 +4,15 @@ import { withUrqlClient } from "next-urql";
 import { Heading, Box, Flex, Link, Button, Text } from "@chakra-ui/react";
 import { Formik, Form } from "formik";
 import InputField from "../components/InputField";
-import Wrapper from "../components/wrapper";
 import NextLink from "next/link";
 import { useForgotPasswordMutation } from "../generated/graphql";
+import { Layout } from "../components/Layout";
 
 const ForgotPassword: React.FC<{}> = ({}) => {
 	const [complete, setComplete] = useState(false);
 	const [, forgotPassword] = useForgotPasswordMutation();
 	return (
-		<Wrapper variant="small">
+		<Layout variant="small">
 			<Formik
 				initialValues={{ email: "" }}
 				onSubmit={async (values) => {
@@ -62,7 +62,7 @@ const ForgotPassword: React.FC<{}> = ({}) => {
 					)
 				}
 			</Formik>
-		</Wrapper>
+		</Layout>
 	);
 };
 

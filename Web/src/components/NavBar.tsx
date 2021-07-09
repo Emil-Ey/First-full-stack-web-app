@@ -20,6 +20,11 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
 	} else if (!data?.me) {
 		body = (
 			<>
+				<NextLink href="/">
+					<Link position={"absolute"} left={20}>
+						HOME
+					</Link>
+				</NextLink>
 				<NextLink href="/login">
 					<Link mr={2}>Login</Link>
 				</NextLink>
@@ -32,8 +37,14 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
 	} else {
 		body = (
 			<Flex>
-				<Box mr={2}>{data?.me.username}</Box>
+				<NextLink href="/">
+					<Link position={"absolute"} left={20}>
+						HOME
+					</Link>
+				</NextLink>
+				<Box mr={4}>{data?.me.username}</Box>
 				<Button
+					mr={20}
 					onClick={() => logout()}
 					isLoading={logoutFetching}
 					variant="link"
