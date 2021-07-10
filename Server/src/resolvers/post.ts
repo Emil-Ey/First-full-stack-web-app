@@ -16,6 +16,7 @@ import {
 } from "type-graphql";
 import { Post } from "../entities/Post";
 import { getConnection } from "typeorm";
+import { Updoot } from "../entities/Updoot";
 
 @InputType()
 class PostInput {
@@ -38,7 +39,39 @@ class PaginatedPosts {
 export class PostResolver {
 	@FieldResolver(() => String)
 	textSnippet(@Root() root: Post) {
-		return root.text.slice(0, 100) + "...";
+		return root.text;
+	}
+
+	@Mutation(() => Boolean)
+	@UseMiddleware(isAuth)
+	async vote(
+		@Arg("postId", () => Int) postId: number,
+		@Arg("value", () => Int) value: number,
+		@Ctx() { req }: MyContext
+	) {
+		const isUpdoot = value !== -1;
+		const realValue = isUpdoot ? 1 : -1;
+		const { userId } = req.session;
+		// Updoot.insert({
+		// 	userId,
+		// 	postId,
+		// 	value: realValue,
+		// });
+		await getConnection().query(
+			`
+			START TRANSACTION;
+			
+			INSERT INTO updoot ("userId", "postId", value) 
+			values (${userId}, ${postId}, ${realValue});
+			
+			UPDATE post
+			SET points = points + ${realValue}
+			WHERE id = ${postId};
+			
+			COMMIT;
+		`
+		);
+		return true;
 	}
 
 	@Query(() => PaginatedPosts)
@@ -48,18 +81,42 @@ export class PostResolver {
 	): Promise<PaginatedPosts> {
 		const realLimit = Math.min(50, limit);
 		const realLimitPlusOne = realLimit + 1;
-		const queryBuilder = getConnection()
-			.getRepository(Post)
-			.createQueryBuilder("p")
-			.orderBy('"createdAt"', "DESC")
-			.take(realLimitPlusOne);
+
+		const replacements: any[] = [realLimitPlusOne];
 		if (cursor) {
-			queryBuilder.where('"createdAt" < :cursor', {
-				cursor: new Date(parseInt(cursor)),
-			});
+			replacements.push(new Date(parseInt(cursor)));
 		}
 
-		const posts = await queryBuilder.getMany();
+		const posts = await getConnection().query(
+			`
+				SELECT p.*,
+				json_build_object(
+					'id', u.id,
+					'username', u.username,
+					'email', u.email
+					) creator
+				FROM post p
+				INNER JOIN public.user u ON u.id = p."creatorId"
+				${cursor ? `WHERE p."createdAt" < $2` : ""}
+				ORDER BY p."createdAt" DESC
+				LIMIT $1
+			`,
+			replacements
+		);
+
+		// const queryBuilder = getConnection()
+		// 	.getRepository(Post)
+		// 	.createQueryBuilder("p")
+		// 	.innerJoinAndSelect("p.creator", "u", 'u.id = p."creatorId"')
+		// 	.orderBy('p."createdAt"', "DESC")
+		// 	.take(realLimitPlusOne);
+		// if (cursor) {
+		// 	queryBuilder.where('p."createdAt" < :cursor', {
+		// 		cursor: new Date(parseInt(cursor)),
+		// 	});
+		// }
+
+		// const posts = await queryBuilder.getMany();
 
 		return {
 			posts: posts.slice(0, realLimit),
