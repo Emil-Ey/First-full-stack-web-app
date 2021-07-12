@@ -26,6 +26,7 @@ const isAuth_1 = require("../middleware/isAuth");
 const type_graphql_1 = require("type-graphql");
 const Post_1 = require("../entities/Post");
 const typeorm_1 = require("typeorm");
+const Updoot_1 = require("../entities/Updoot");
 let PostInput = class PostInput {
 };
 __decorate([
@@ -58,9 +59,18 @@ let PostResolver = class PostResolver {
     }
     vote(postId, value, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
+            const { userId } = req.session;
+            const updoot = yield Updoot_1.Updoot.findOne({ where: { postId, userId } });
             const isUpdoot = value !== -1;
             const realValue = isUpdoot ? 1 : -1;
-            const { userId } = req.session;
+            if (updoot && updoot.value !== realValue) {
+                throw ;
+            }
+            else if (!updoot) {
+                yield typeorm_1.getConnection().transaction((tm) => __awaiter(this, void 0, void 0, function* () {
+                    tm.query(``);
+                }));
+            }
             yield typeorm_1.getConnection().query(`
 			START TRANSACTION;
 			

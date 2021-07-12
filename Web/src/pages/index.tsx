@@ -3,6 +3,8 @@ import {
 	Button,
 	Flex,
 	Heading,
+	Icon,
+	IconButton,
 	Link,
 	Stack,
 	Text,
@@ -13,6 +15,8 @@ import { Layout } from "../components/Layout";
 import { usePostsQuery } from "../generated/graphql";
 import { createUrqlClient } from "../utils/createUrqlClient";
 import NextLink from "next/link";
+import { ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
+import { UpdootSection } from "../components/UpdootSection";
 
 const Index = () => {
 	const [variables, setVariables] = useState({
@@ -53,16 +57,23 @@ const Index = () => {
 					) : (
 						<Stack spacing={8}>
 							{data!.posts.posts.map((p) => (
-								<Box
+								<Flex
 									key={p.id}
 									p={5}
 									shadow="md"
 									borderWidth="1px"
 								>
-									<Heading fontSize="xl">{p.title}</Heading>
-									<Text>Posted by {p.creator.username}</Text>
-									<Text mt={4}>{p.textSnippet}</Text>
-								</Box>
+									<UpdootSection post={p} />
+									<Box>
+										<Heading fontSize="xl">
+											{p.title}
+										</Heading>
+										<Text>
+											Posted by {p.creator.username}
+										</Text>
+										<Text mt={4}>{p.textSnippet}</Text>
+									</Box>
+								</Flex>
 							))}
 						</Stack>
 					)}

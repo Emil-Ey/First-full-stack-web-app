@@ -49,14 +49,18 @@ export class PostResolver {
 		@Arg("value", () => Int) value: number,
 		@Ctx() { req }: MyContext
 	) {
+		const { userId } = req.session;
+		const updoot = await Updoot.findOne({ where: { postId, userId } });
 		const isUpdoot = value !== -1;
 		const realValue = isUpdoot ? 1 : -1;
-		const { userId } = req.session;
-		// Updoot.insert({
-		// 	userId,
-		// 	postId,
-		// 	value: realValue,
-		// });
+
+		if (updoot && updoot.value !== realValue) {
+			throw ;
+		} else if (!updoot) {
+			await getConnection().transaction(async (tm) => {
+				tm.query(``);
+			});
+		}
 		await getConnection().query(
 			`
 			START TRANSACTION;
