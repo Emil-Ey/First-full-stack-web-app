@@ -197,8 +197,6 @@ let UserResolver = class UserResolver {
             else {
                 user = yield User_1.User.findOne({ where: { username: usernameOrEmail } });
             }
-            console.log(user);
-            console.log(user1);
             if (!user) {
                 return {
                     errors: [
@@ -220,7 +218,6 @@ let UserResolver = class UserResolver {
                 };
             }
             req.session.userId = user.id;
-            req.session.save();
             return { user };
         });
     }

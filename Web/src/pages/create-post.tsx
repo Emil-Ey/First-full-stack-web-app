@@ -1,21 +1,11 @@
 import { Box, Heading } from "@chakra-ui/layout";
-import {
-	Alert,
-	AlertDescription,
-	AlertIcon,
-	AlertTitle,
-	Button,
-	CloseButton,
-	Link,
-} from "@chakra-ui/react";
+import { Button } from "@chakra-ui/react";
 import { Form, Formik } from "formik";
 import { withUrqlClient } from "next-urql";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import InputField from "../components/InputField";
 import { Layout } from "../components/Layout";
-import Wrapper from "../components/wrapper";
 import { useCreatePostMutation } from "../generated/graphql";
 import { createUrqlClient } from "../utils/createUrqlClient";
 import { useIsAuth } from "../utils/useIsAuth";

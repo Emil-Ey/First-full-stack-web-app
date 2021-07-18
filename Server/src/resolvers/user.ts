@@ -218,9 +218,6 @@ export class UserResolver {
 			user = await User.findOne({ where: { username: usernameOrEmail } });
 		}
 
-		console.log(user);
-		console.log(user1);
-
 		if (!user) {
 			return {
 				errors: [
@@ -244,7 +241,7 @@ export class UserResolver {
 		}
 
 		req.session.userId = user.id;
-		req.session.save();
+
 		return { user };
 	}
 
