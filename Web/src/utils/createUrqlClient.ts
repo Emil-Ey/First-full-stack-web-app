@@ -10,22 +10,20 @@ import {
 } from "../generated/graphql";
 import { cacheExchange, Resolver } from "@urql/exchange-graphcache";
 import { betterUpdateQuery } from "./betterUpdateQuery";
-import { isNullableType } from "graphql";
 import gql from "graphql-tag";
-import { IdProvider } from "@chakra-ui/react";
 import { isServer } from "./isServer";
-/*import { pipe, tap } from "wonka";*/
+// import { pipe, tap } from "wonka";
 
-/*const errorExchange: Exchange = ({ forward }) => {
-	return pipe(
-		forward(ops$),
-		tap(({ error }) => {
-			if (error) {
-				console.log("ERROR EXCHANGE");
-			}
-		})
-	);
-};*/
+// const errorExchange: Exchange = ({ forward }) => {
+// 	return pipe(
+// 		forward(ops$),
+// 		tap(({ error }) => {
+// 			if (error) {
+// 				console.log("ERROR EXCHANGE");
+// 			}
+// 		})
+// 	);
+// };
 
 const cursorPagination = (): Resolver => {
 	return (_parent, fieldArgs, cache, info) => {
@@ -68,7 +66,7 @@ const cursorPagination = (): Resolver => {
 export const createUrqlClient = (ssrExchange: any, ctx: any) => {
 	let cookie = "";
 	if (isServer()) {
-		cookie = ctx.req.headers.cookie;
+		cookie = ctx?.req?.headers?.cookie;
 	}
 
 	return {
