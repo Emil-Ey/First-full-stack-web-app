@@ -214,8 +214,6 @@ export class UserResolver {
 		@Arg("password") password: string,
 		@Ctx() { req }: MyContext
 	) {
-		const user1 = await User.findOne({ email: usernameOrEmail });
-
 		let user;
 		if (usernameOrEmail.includes("@")) {
 			user = await User.findOne({ where: { email: usernameOrEmail } });
