@@ -2,11 +2,14 @@ import React from "react";
 import { withUrqlClient } from "next-urql";
 import { Layout } from "../../components/Layout";
 import { createUrqlClient } from "../../utils/createUrqlClient";
-import { Heading } from "@chakra-ui/react";
+import { Box, Heading } from "@chakra-ui/react";
 import { useGetPostFromUrl } from "../../utils/useGetPostFromUrl";
+import { EditDeletePostButtons } from "../../components/EditDeletePostButtons";
+import { useRouter } from "next/router";
 
 const Post = ({}) => {
 	const [{ data, fetching }] = useGetPostFromUrl();
+	const router = useRouter();
 
 	if (fetching) {
 		return (
@@ -27,7 +30,14 @@ const Post = ({}) => {
 	return (
 		<Layout>
 			<Heading mb={4}>{data.post.title}</Heading>
-			{data.post.text}
+			<Box mb={4}>{data.post.text}</Box>
+			<Box>
+				<EditDeletePostButtons
+					postId={data.post.id}
+					creatorId={data.post.creator.id}
+					next={`/post/${data.post.id}`}
+				/>
+			</Box>
 		</Layout>
 	);
 };

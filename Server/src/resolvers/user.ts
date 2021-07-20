@@ -17,6 +17,7 @@ import { validateRegister } from "../utils/validateRegister";
 import { sendEmail } from "../utils/sendEmail";
 import { v4 } from "uuid";
 import { getConnection } from "typeorm";
+import argon2 from "argon2";
 
 @ObjectType()
 class FieldError {
@@ -102,7 +103,10 @@ export class UserResolver {
 			};
 		}
 
-		await User.update({ id: userIdNum }, { password: newPassword });
+		await User.update(
+			{ id: userIdNum },
+			{ password: await argon2.hash(newPassword) }
+		);
 		await redis.del(key);
 
 		// Login user after changed password
@@ -158,6 +162,7 @@ export class UserResolver {
 			return { errors };
 		}
 
+		const hashedPassword = await argon2.hash(options.password);
 		let user;
 		try {
 			const result = await getConnection()
@@ -168,7 +173,7 @@ export class UserResolver {
 					{
 						username: options.username,
 						email: options.email,
-						password: options.password,
+						password: hashedPassword,
 					},
 				])
 				.returning("*")
@@ -228,8 +233,8 @@ export class UserResolver {
 				],
 			};
 		}
-
-		if (user.password != password) {
+		const valid = await argon2.verify(user.password, password);
+		if (!valid) {
 			return {
 				errors: [
 					{

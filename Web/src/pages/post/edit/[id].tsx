@@ -1,7 +1,7 @@
-import { Heading, Box, Button } from "@chakra-ui/react";
-import { Formik, Form } from "formik";
+import { Box, Button, Heading } from "@chakra-ui/react";
+import { Form, Formik } from "formik";
 import { withUrqlClient } from "next-urql";
-import router, { useRouter } from "next/router";
+import { useRouter } from "next/router";
 import React from "react";
 import InputField from "../../../components/InputField";
 import { Layout } from "../../../components/Layout";
@@ -45,15 +45,11 @@ const editPost = ({}) => {
 				initialValues={{ title: data.post.title, text: data.post.text }}
 				onSubmit={async (values) => {
 					await updatePost({ id: intId, ...values });
-					router.push("/");
-					// const { error } = await createPost({ options: values });
-					// if (error?.message.includes("logged in")) {
-					// 	// Not logged in
-					// 	setError(true);
-					// } else {
-					// 	// Login successfully
-					// 	router.push("/");
-					// }
+					if (typeof router.query.next === "string") {
+						router.push(`/post/${router.query.id}`);
+					} else {
+						router.push("/");
+					}
 				}}
 			>
 				{({ isSubmitting }) => (

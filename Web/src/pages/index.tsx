@@ -3,24 +3,18 @@ import {
 	Button,
 	Flex,
 	Heading,
-	IconButton,
 	Link,
 	Stack,
 	Text,
-	useMergeRefs,
 } from "@chakra-ui/react";
 import { withUrqlClient } from "next-urql";
-import React, { useState } from "react";
-import { Layout } from "../components/Layout";
-import {
-	useDeletePostMutation,
-	useMeQuery,
-	usePostsQuery,
-} from "../generated/graphql";
-import { createUrqlClient } from "../utils/createUrqlClient";
 import NextLink from "next/link";
+import React, { useState } from "react";
+import { EditDeletePostButtons } from "../components/EditDeletePostButtons";
+import { Layout } from "../components/Layout";
 import { UpdootSection } from "../components/UpdootSection";
-import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
+import { usePostsQuery } from "../generated/graphql";
+import { createUrqlClient } from "../utils/createUrqlClient";
 
 const Index = () => {
 	const [variables, setVariables] = useState({
@@ -30,8 +24,6 @@ const Index = () => {
 	const [{ data, fetching }] = usePostsQuery({
 		variables,
 	});
-	const [, deletePost] = useDeletePostMutation();
-	const [{ data: meData }] = useMeQuery();
 
 	if (!data && !fetching) {
 		return (
@@ -84,43 +76,10 @@ const Index = () => {
 											</Text>
 											<Text mt={4}>{p.textSnippet}</Text>
 											<Flex flex={1} align="center">
-												{p.creator.id ===
-												meData?.me?.id ? (
-													<Box ml="auto">
-														<NextLink
-															href="post/edit/[id]"
-															as={`/post/edit/${p.id}`}
-														>
-															<IconButton
-																as={Link}
-																mr={4}
-																aria-label="edit post"
-																variant="ghost"
-																icon={
-																	<EditIcon
-																		w={6}
-																		h={6}
-																	/>
-																}
-															/>
-														</NextLink>
-														<IconButton
-															aria-label="delete post"
-															variant="ghost"
-															icon={
-																<DeleteIcon
-																	w={6}
-																	h={6}
-																/>
-															}
-															onClick={async () => {
-																deletePost({
-																	id: p.id,
-																});
-															}}
-														/>
-													</Box>
-												) : null}
+												<EditDeletePostButtons
+													postId={p.id}
+													creatorId={p.creator.id}
+												/>
 											</Flex>
 										</Box>
 									</Flex>

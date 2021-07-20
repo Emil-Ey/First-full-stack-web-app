@@ -33,6 +33,7 @@ const validateRegister_1 = require("../utils/validateRegister");
 const sendEmail_1 = require("../utils/sendEmail");
 const uuid_1 = require("uuid");
 const typeorm_1 = require("typeorm");
+const argon2_1 = __importDefault(require("argon2"));
 let FieldError = class FieldError {
 };
 __decorate([
@@ -112,7 +113,7 @@ let UserResolver = class UserResolver {
                     ],
                 };
             }
-            yield User_1.User.update({ id: userIdNum }, { password: newPassword });
+            yield User_1.User.update({ id: userIdNum }, { password: yield argon2_1.default.hash(newPassword) });
             yield redis.del(key);
             req.session.userId = user.id;
             req.session.save();
@@ -143,6 +144,7 @@ let UserResolver = class UserResolver {
             if (errors) {
                 return { errors };
             }
+            const hashedPassword = yield argon2_1.default.hash(options.password);
             let user;
             try {
                 const result = yield typeorm_1.getConnection()
@@ -153,7 +155,7 @@ let UserResolver = class UserResolver {
                     {
                         username: options.username,
                         email: options.email,
-                        password: options.password,
+                        password: hashedPassword,
                     },
                 ])
                     .returning("*")
@@ -207,7 +209,8 @@ let UserResolver = class UserResolver {
                     ],
                 };
             }
-            if (user.password != password) {
+            const valid = yield argon2_1.default.verify(user.password, password);
+            if (!valid) {
                 return {
                     errors: [
                         {
